@@ -1,0 +1,5 @@
+{
+  "name": "AI Data Transformation and Agentic Analytics Platform",
+  "description": "An enterprise-level platform for data engineers and business analysts to transform relational data into AI-native structures (Graph & Vector DBs) and leverage AI agents for advanced analytics.",
+  "requestFramePermissions": []
+}
