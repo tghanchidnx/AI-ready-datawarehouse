@@ -1,7 +1,7 @@
 import {
   Pipeline, PipelineStatus, AgentLog, Metrics, Notification, User, Role, PermissionId, DataSource, DataSourceType,
   LineageGraph, RelationshipConfig, ConsoleLog, SecurityIncident,
-  EnvironmentConfig, DatabaseConnection, DatabaseConnectionType, LLMProviderConfig, AgentConfig, Workflow, Permission, AuthSettings, AccessReview, Vendor, Prompt
+  EnvironmentConfig, DatabaseConnection, DatabaseConnectionType, LLMProviderConfig, AgentConfig, Workflow, Permission, AuthSettings, AccessReview, Vendor, Prompt, ChangeRequest, BatchJob, BatchJobStatus
 } from './types';
 
 export const APP_VERSION = '1.2.3';
@@ -11,6 +11,13 @@ export const MOCK_PIPELINES: Pipeline[] = [
     { id: 'pipe-002', name: 'Sales Data Transformation', status: PipelineStatus.Completed, lastRun: '2025-10-31 09:45 UTC', nextRun: '2025-10-31 10:45 UTC', avgDuration: '12m 15s' },
     { id: 'pipe-003', name: 'Product Catalog Sync', status: PipelineStatus.Failed, lastRun: '2025-10-31 09:30 UTC', nextRun: '2025-10-31 10:30 UTC', avgDuration: '2m 3s' },
     { id: 'pipe-004', name: 'Inventory Update', status: PipelineStatus.Scheduled, lastRun: '2025-10-30 22:00 UTC', nextRun: '2025-10-31 22:00 UTC', avgDuration: '8m 45s' },
+];
+
+export const MOCK_BATCH_JOBS: BatchJob[] = [
+    { id: 'job-001', name: 'End-of-Month Reporting', status: BatchJobStatus.Succeeded, schedule: '0 2 1 * *', lastRun: '2025-10-01 02:15 UTC', avgDuration: '45m 10s', dataSource: 'Prod Snowflake Warehouse' },
+    { id: 'job-002', name: 'Historical Data Backfill', status: BatchJobStatus.Running, schedule: 'Manual', lastRun: '2025-10-31 09:00 UTC', avgDuration: '3h 20m', dataSource: 'Demo: Archived Sales Data' },
+    { id: 'job-003', name: 'ML Model Training Data Prep', status: BatchJobStatus.Failed, schedule: '0 0 * * 1', lastRun: '2025-10-27 00:05 UTC', avgDuration: '1h 5m', dataSource: 'Staging Databricks Workspace' },
+    { id: 'job-004', name: 'GDPR Data Deletion', status: BatchJobStatus.Pending, schedule: '0 1 * * *', lastRun: '2025-10-31 01:00 UTC', avgDuration: '12m 5s', dataSource: 'All Production Sources' },
 ];
 
 export const MOCK_AGENT_LOGS: AgentLog[] = [
@@ -51,6 +58,7 @@ export const MOCK_PERMISSIONS: Permission[] = [
     { id: 'view_data_lineage', name: 'View Data Lineage', description: 'Can view data lineage graphs.', category: 'Discovery' },
     // Changes & Approvals
     { id: 'view_changes', name: 'View Changes & Approvals', description: 'Can view change requests and approvals.', category: 'Governance' },
+    { id: 'manage_changes', name: 'Manage Changes & Approvals', description: 'Can approve, reject, and comment on change requests.', category: 'Governance' },
     // Security
     { id: 'view_security_incidents', name: 'View Security Incidents', description: 'Can view security incidents.', category: 'Security' },
     // Console
@@ -78,8 +86,8 @@ const allPermissionIds: PermissionId[] = MOCK_PERMISSIONS.map(p => p.id);
 
 export const MOCK_ROLES: Role[] = [
     { id: 'role_admin', name: 'Administrator', description: 'Has all permissions.', permissions: allPermissionIds },
-    { id: 'role_data_engineer', name: 'Data Engineer', description: 'Manages data sources, pipelines, and connections.', permissions: ['view_dashboard', 'view_datasources', 'view_pipelines', 'view_batch_processing', 'view_data_lineage', 'view_settings', 'view_settings_connections', 'manage_settings_connections', 'view_settings_agents', 'manage_settings_agents', 'view_settings_workflows', 'manage_settings_workflows', 'view_console', 'view_help'] },
-    { id: 'role_security_analyst', name: 'Security Analyst', description: 'Monitors security and compliance.', permissions: ['view_dashboard', 'view_security_incidents', 'view_console', 'view_settings', 'view_settings_authentication', 'view_settings_compliance', 'view_settings_users', 'view_help'] },
+    { id: 'role_data_engineer', name: 'Data Engineer', description: 'Manages data sources, pipelines, and connections.', permissions: ['view_dashboard', 'view_datasources', 'view_pipelines', 'view_batch_processing', 'view_data_lineage', 'view_settings', 'view_settings_connections', 'manage_settings_connections', 'view_settings_agents', 'manage_settings_agents', 'view_settings_workflows', 'manage_settings_workflows', 'view_console', 'view_help', 'view_changes', 'manage_changes'] },
+    { id: 'role_security_analyst', name: 'Security Analyst', description: 'Monitors security and compliance.', permissions: ['view_dashboard', 'view_security_incidents', 'view_console', 'view_settings', 'view_settings_authentication', 'view_settings_compliance', 'view_settings_users', 'view_help', 'view_changes'] },
     { id: 'role_business_analyst', name: 'Business Analyst', description: 'Views dashboards, reports, and data lineage.', permissions: ['view_dashboard', 'view_datasources', 'view_data_lineage', 'view_relationship_discovery', 'view_help'] },
     { id: 'role_viewer', name: 'Viewer', description: 'Read-only access to dashboards.', permissions: ['view_dashboard', 'view_help'] },
 ];
@@ -140,6 +148,47 @@ export const MOCK_SECURITY_INCIDENTS: SecurityIncident[] = [
             { timestamp: '2025-10-30 22:20 UTC', status: 'Investigating', notes: 'Incident assigned to Charlie. Initial investigation confirms anomalous activity. Affected service account has been temporarily disabled.', user: 'charlie@example.com' },
         ],
     },
+];
+
+export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
+    {
+        id: 'CR-001',
+        title: 'Add `last_login_ip` to Customer Graph Node',
+        description: 'The Schema Discovery Agent detected a new column `last_login_ip` in the source `users` table. This change request proposes adding this attribute to the `Customer` node in the knowledge graph to enable location-based security analysis.',
+        requestedBy: 'Schema Change',
+        requestedAt: '2025-10-31T09:30:00Z',
+        currentStage: 'Technical Review',
+        stages: [
+            { name: 'Pending Review', status: 'Completed', approver: 'System', timestamp: '2025-10-31T09:30:00Z' },
+            { name: 'Technical Review', status: 'In Progress' },
+            { name: 'BRD Generation', status: 'Pending' },
+            { name: 'Final Approval', status: 'Pending' },
+            { name: 'Implemented', status: 'Pending' },
+        ],
+        auditTrail: [
+            { timestamp: '2025-10-31T09:30:00Z', user: 'System', action: 'Request Created', details: 'Detected schema change in `source.users`.' },
+            { timestamp: '2025-10-31T09:35:00Z', user: 'bob@example.com', action: 'Stage Approved', details: 'Approved "Pending Review" stage.' },
+        ],
+    },
+    {
+        id: 'CR-002',
+        title: 'Assistant Request: "Summarize pipeline performance"',
+        description: 'User asked the AI assistant to perform an action that is not currently supported: "Summarize the performance of all pipelines into a PDF report". This should be reviewed as a potential feature enhancement.',
+        requestedBy: 'AI Assistant Feedback',
+        requestedAt: '2025-10-31T10:15:00Z',
+        currentStage: 'BRD Generation',
+        stages: [
+            { name: 'Pending Review', status: 'Completed', approver: 'AI Assistant', timestamp: '2025-10-31T10:15:00Z' },
+            { name: 'Technical Review', status: 'Completed', approver: 'bob@example.com', timestamp: '2025-10-31T11:00:00Z' },
+            { name: 'BRD Generation', status: 'In Progress' },
+            { name: 'Final Approval', status: 'Pending' },
+            { name: 'Implemented', status: 'Pending' },
+        ],
+        auditTrail: [
+            { timestamp: '2025-10-31T10:15:00Z', user: 'AI Assistant', action: 'Request Created' },
+            { timestamp: '2025-10-31T11:00:00Z', user: 'bob@example.com', action: 'Stage Approved', details: 'Technical Review approved. Looks feasible.' },
+        ],
+    }
 ];
 
 // from Settings.tsx
@@ -260,4 +309,12 @@ export const MOCK_PROMPT_LIBRARY: Prompt[] = [
     { id: 'p1', title: 'Summarize Schema', description: 'Generate a natural language summary of a database schema.', prompt: 'Summarize the following DDL schema for a business analyst. Focus on the main entities and their relationships:\n\n{schema}', category: 'Data Exploration' },
     { id: 'p2', title: 'Suggest Data Quality Rules', description: 'Propose data quality checks based on column names and types.', prompt: 'Given the table "{table_name}" with columns ({columns}), suggest 3 data quality rules with explanations.', category: 'Data Quality' },
     { id: 'p3', title: 'Generate Cypher Query', description: 'Translate a natural language question into a Cypher query for Neo4j.', prompt: 'Translate this question into a Cypher query for a graph with nodes :User, :Product, and :Order and relationships :BOUGHT and :VIEWED. Question: "{question}"', category: 'Query Generation' },
+];
+
+export const MOCK_ASSISTANT_SUGGESTIONS: string[] = [
+    "Show me the data lineage view",
+    "Create a new pipeline",
+    "What is this page for?",
+    "How do I set up SSO?",
+    "Take me to the security incidents",
 ];

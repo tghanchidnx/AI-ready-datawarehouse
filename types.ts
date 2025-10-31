@@ -14,6 +14,23 @@ export interface Pipeline {
     avgDuration: string;
 }
 
+export enum BatchJobStatus {
+    Pending = 'Pending',
+    Running = 'Running',
+    Succeeded = 'Succeeded',
+    Failed = 'Failed',
+}
+
+export interface BatchJob {
+    id: string;
+    name: string;
+    status: BatchJobStatus;
+    schedule: string;
+    lastRun: string;
+    avgDuration: string;
+    dataSource: string;
+}
+
 export type AgentLogLevel = 'info' | 'warning' | 'error';
 
 export interface AgentLog {
@@ -55,7 +72,8 @@ export type View =
   | 'security-incidents'
   | 'console'
   | 'settings'
-  | 'help';
+  | 'help'
+  | 'access-denied';
 
 export type PermissionId =
   | 'view_dashboard'
@@ -65,6 +83,7 @@ export type PermissionId =
   | 'view_relationship_discovery'
   | 'view_data_lineage'
   | 'view_changes'
+  | 'manage_changes'
   | 'view_security_incidents'
   | 'view_console'
   | 'view_settings'
@@ -255,9 +274,40 @@ export interface Prompt {
     category: string;
 }
 
-export interface ChatMessage {
+export interface AssistantMessage {
     id: string;
     role: 'user' | 'assistant';
-    content: string;
+    content: string | React.ReactNode;
     timestamp: string;
+}
+
+export type ChangeRequestSource = 'Manual Submission' | 'Schema Change' | 'Performance Anomaly' | 'AI Assistant Feedback';
+
+export type ApprovalStageStatus = 'Pending' | 'Approved' | 'Rejected' | 'In Progress' | 'Completed';
+
+export interface ApprovalStage {
+    name: string;
+    status: ApprovalStageStatus;
+    approver?: string;
+    timestamp?: string;
+    notes?: string;
+}
+
+export interface AuditEntry {
+    timestamp: string;
+    user: string;
+    action: string;
+    details?: string;
+}
+
+export interface ChangeRequest {
+    id: string;
+    title: string;
+    description: string;
+    requestedBy: ChangeRequestSource | string;
+    requestedAt: string;
+    currentStage: string;
+    stages: ApprovalStage[];
+    auditTrail: AuditEntry[];
+    generatedBRD?: string;
 }
