@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Card from '../common/Card';
 import { MOCK_SECURITY_INCIDENTS } from '../../constants';

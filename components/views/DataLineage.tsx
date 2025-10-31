@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Card from '../common/Card';
 import GraphVisualizer from '../common/GraphVisualizer';
-// Fix: Renamed MOCK_DATA_SOURCES to MOCK_DEMO_DATA_SOURCES to match exported constant.
 import { MOCK_LINEAGE_GRAPH, MOCK_DEMO_DATA_SOURCES } from '../../constants';
 import type { LineageGraph, LineageNodeType } from '../../types';
 
@@ -32,7 +31,6 @@ const DataLineage: React.FC = () => {
             id="source-select"
             className="bg-brand-secondary border border-brand-border rounded-md px-3 py-2 text-white focus:ring-brand-accent focus:border-brand-accent"
           >
-            {/* Fix: Renamed MOCK_DATA_SOURCES to MOCK_DEMO_DATA_SOURCES to match imported constant. */}
             {MOCK_DEMO_DATA_SOURCES.filter(ds => ds.status === 'connected').map(ds => (
               <option key={ds.id} value={ds.id}>{ds.name}</option>
             ))}

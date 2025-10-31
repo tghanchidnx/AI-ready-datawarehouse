@@ -4,6 +4,7 @@ import { MOCK_CONSOLE_LOGS } from '../../constants';
 import type { ConsoleLog, ConsoleLogLevel, ConsoleLogCategory } from '../../types';
 import { Download, Trash2, Filter } from 'lucide-react';
 import Tooltip from '../common/Tooltip';
+import { useAuth } from '../../contexts/AuthContext';
 
 const LogLevelPill: React.FC<{ level: ConsoleLogLevel }> = ({ level }) => {
   const levelMap = {
@@ -29,6 +30,7 @@ const LogCategoryPill: React.FC<{ category: ConsoleLogCategory }> = ({ category 
 
 
 const Console: React.FC = () => {
+  const { can } = useAuth();
   const [logs, setLogs] = useState<ConsoleLog[]>(MOCK_CONSOLE_LOGS);
   const [filterLevel, setFilterLevel] = useState<ConsoleLogLevel | 'ALL'>('ALL');
   const [filterCategory, setFilterCategory] = useState<ConsoleLogCategory | 'ALL'>('ALL');
@@ -102,11 +104,13 @@ const Console: React.FC = () => {
                         <Trash2 size={18} />
                     </button>
                 </Tooltip>
-                <Tooltip text="Export Logs">
-                    <button onClick={handleExportLogs} className="p-2 text-brand-muted hover:text-brand-accent hover:bg-brand-border rounded-md transition-colors">
-                        <Download size={18} />
-                    </button>
-                </Tooltip>
+                {can('export_console_logs') && (
+                    <Tooltip text="Export Logs">
+                        <button onClick={handleExportLogs} className="p-2 text-brand-muted hover:text-brand-accent hover:bg-brand-border rounded-md transition-colors">
+                            <Download size={18} />
+                        </button>
+                    </Tooltip>
+                )}
             </div>
         </div>
         <div ref={logContainerRef} className="flex-grow p-4 overflow-y-auto bg-brand-primary/50">
